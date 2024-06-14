@@ -64,31 +64,5 @@ open class TaggedAsyncOperation<Input, Output, Tag>: AbstractClass, AsyncOperati
             }
         }
     }
-
-    @available(iOS 13.0, *)
-    private func executeAsyncWithSemaphore(input: Input) async throws -> Output {
-        try await withCheckedThrowingContinuation { continuation in
-            let semaphore = DispatchSemaphore(value: 0)
-            var result: OperationResult<Output>?
-
-            execute(with: input) { operationResult in
-                result = operationResult
-                semaphore.signal()
-            }
-
-            semaphore.wait()
-
-            if let result = result {
-                switch result {
-                case .success(let output):
-                    continuation.resume(returning: output)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            } else {
-                continuation.resume(throwing: AsyncOperationError.executionFailed)
-            }
-        }
-    }
     #endif
 }
